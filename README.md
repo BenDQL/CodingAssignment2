@@ -1,2 +1,3 @@
-# blank_net_art
-a blank net art template to work with deno deploy.
+# Creative Coding Assignment 2
+
+Use chaotic and glitch art to reflect human's bad mood when hearing mean words.
