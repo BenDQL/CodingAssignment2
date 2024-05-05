@@ -45,7 +45,6 @@ class ImageGlitch {
     this.img = happyImg;
     this.img.onload = () => {
       this.initDrawImage(this.img);
-      this.setup();
     };
     // Initialise happy image
     const sadImg = new Image();
