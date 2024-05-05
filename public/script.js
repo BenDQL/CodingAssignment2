@@ -8,7 +8,7 @@ class Block {
     this.edge = edge;
     this.startX = startX;
     this.startY = startY;
-    this.angleRatio = randomRatio(0.3, 0.2);
+    this.angleRatio = randomRatio(0.2, 0.1);
   }
 
   // Generate the {x, y} to let block move in spiral with speed ratio
@@ -88,17 +88,16 @@ class ImageGlitch {
   };
 
   // Make the image gray
-  grayscaleAnimation = () => {
+  grayscaleEffect = () => {
     this.img = this.sadImg;
     this.ctx.filter = "grayscale(1)";
     this.initDrawImage();
-    setTimeout(() => this.movingBlocks(0), 1000);
   };
 
   movingBlocks = (i) => {
     // Recursion
     this.blocksArray.forEach((block) => {
-      const { updatedX, updatedY } = block.moveInSpiral(i);
+      const { updatedX, updatedY } = block.moveInSpiral(Math.floor(i));
       const canvasX = (this.cnv.width - this.img.width) / 2;
       const canvasY = (this.cnv.height - this.img.height) / 2;
       this.drawImg(
@@ -112,10 +111,10 @@ class ImageGlitch {
         block.edge
       );
     });
-    this.frameId = requestAnimationFrame(() => this.movingBlocks(i + 1));
+    this.frameId = requestAnimationFrame(() => this.movingBlocks(i + 0.5));
   };
 
-  stopAnimation = () => {
+  stopGlitch = () => {
     cancelAnimationFrame(this.frameId);
     this.frameId = null;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -126,12 +125,10 @@ class ImageGlitch {
   };
 }
 
-/* Text Glitch */
-class GlitchText {
-  constructor(goodTexts, badTexts, elementId) {
-    this.goodTexts = goodTexts;
-    this.badTexts = badTexts;
-    this.frameId = null;
+/* Message Glitch */
+class GlitchMessage {
+  constructor(message, elementId) {
+    this.msg = message;
     this.domElem = document.getElementById(elementId);
     const { mainTextElem, shadowElems } = this.setup();
     this.mainTextElem = mainTextElem;
@@ -139,20 +136,21 @@ class GlitchText {
   }
 
   setup = () => {
+    // Add child div for displaying main text and its shadow layer for glitched effect
     const mainTextElem = document.createElement("div");
     mainTextElem.classList.add("main-text");
-    mainTextElem.textContent = this.goodTexts[0];
+    mainTextElem.textContent = this.msg;
     this.domElem.appendChild(mainTextElem);
 
     const shadowElem1 = document.createElement("div");
     shadowElem1.classList.add("shadow");
-    shadowElem1.textContent = this.goodTexts[0];
+    shadowElem1.textContent = this.msg;
     this.domElem.appendChild(shadowElem1);
 
     const shadowElem2 = document.createElement("div");
     shadowElem2.classList.add("shadow");
     shadowElem2.classList.add("shawdow-red");
-    shadowElem2.textContent = this.goodTexts[0];
+    shadowElem2.textContent = this.msg;
     this.domElem.appendChild(shadowElem2);
 
     const shadowElems = [shadowElem1, shadowElem2];
@@ -160,40 +158,10 @@ class GlitchText {
     return { mainTextElem, shadowElems };
   };
 
-  randomReplaceText = (isGood) => {
-    if (isGood) {
-      const randomIndex = randomInt(this.goodTexts.length);
-      this.goodTexts.slice(randomIndex);
-      return this.goodTexts[randomIndex];
-    } else {
-      const randomIndex = randomInt(this.badTexts.length);
-      return this.badTexts[randomIndex];
-    }
-  };
-
-  startAnimation = (i, glitchedImg) => {
-    let displayText;
-    if (i < 4) {
-      displayText = this.randomReplaceText(true);
-    } else if (i === 4) {
-      displayText = this.randomReplaceText(false);
-    } else {
-      glitchedImg.grayscaleAnimation();
-      setTimeout(() => {
-        glitchedImg.stopAnimation();
-        displayText = this.goodTexts[0];
-        this.mainTextElem.textContent = displayText;
-        this.shadowElems.forEach((shadowElem) => {
-          shadowElem.textContent = displayText;
-        });
-      }, 3000);
-      // Stop the animation after 5 times
-      return this.stopGlitch();
-    }
-    this.mainTextElem.textContent = displayText;
+  startGlitch = () => {
+    // Start the glitched text effect
     this.mainTextElem.classList.add("glitched");
     this.shadowElems.forEach((shadowElem) => {
-      shadowElem.textContent = displayText;
       shadowElem.classList.add("glitched");
     });
     setTimeout(() => {
@@ -202,15 +170,6 @@ class GlitchText {
         shadowElem.classList.remove("glitched")
       );
     }, 50 + randomInt(100));
-    this.frameId = setTimeout(
-      () => this.startAnimation(i + 1, glitchedImg),
-      350 + randomInt(500)
-    );
-  };
-
-  stopGlitch = () => {
-    clearTimeout(this.frameId);
-    this.frameId = null;
   };
 }
 
@@ -218,7 +177,8 @@ const canvas = document.getElementById("cnv-element");
 canvas.width = 1028;
 canvas.height = 728;
 
-const glitchText = new GlitchText(
+// Initialise messages & images & audio
+const [goodMessages, badMessages] = [
   [
     "You look amazing today!",
     "Thanks for everything you do.",
@@ -237,19 +197,57 @@ const glitchText = new GlitchText(
     "You're hopeless!",
     "I wish you never born.",
   ],
-  "glitch-text"
-);
+];
+
 const glitchImage = new ImageGlitch(
   "images/happy.jpg",
   "images/sad.jpg",
   canvas
 );
 
-const setupCanvas = () => {
-  glitchImage.setup(30);
-  /* Start Text animation */
-  glitchText.startAnimation(0, glitchImage);
+const randomReplaceText = (isGood) => {
+  // Display positive / negative message
+  if (isGood) {
+    const randomIndex = randomInt(goodMessages.length);
+    //goodMessages = goodMessages.slice(randomIndex);
+    return goodMessages[randomIndex];
+  } else {
+    const randomIndex = randomInt(badMessages.length);
+    return badMessages[randomIndex];
+  }
 };
 
-setupCanvas();
-setInterval(() => setupCanvas(), 7000); // Keep playing the animation
+const startMessageAnimation = (i, cb) => {
+  let displayText;
+  if (i < 4) {
+    // Display good message for 4 times
+    displayText = randomReplaceText(true);
+  } else if (i === 4) {
+    // Display bad message on the 5-th time
+    displayText = randomReplaceText(false);
+  } else {
+    return cb();
+  }
+  document.getElementById("glitch-text").innerHTML = "";
+  const glitchedMsg = new GlitchMessage(displayText, "glitch-text");
+  glitchedMsg.startGlitch();
+  // Replace with new message after some time
+  setTimeout(() => startMessageAnimation(i + 1, cb), 350 + randomInt(500));
+};
+
+const startAnimation = () => {
+  glitchImage.setup(30);
+
+  startMessageAnimation(0, () => {
+    glitchImage.grayscaleEffect();
+    setTimeout(() => glitchImage.movingBlocks(0), 1000);
+    setTimeout(() => {
+      // Stop image glitch effect after 3 seconds
+      glitchImage.stopGlitch();
+      // Start the whole animation again
+      startAnimation();
+    }, 5000);
+  });
+};
+
+startAnimation();

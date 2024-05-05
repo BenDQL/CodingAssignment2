@@ -7,10 +7,14 @@ body {
   background-color: #222;
   color: #fff;
   text-align: center;
-  font-family: "oswald", sans-serif;
+  font-family: "Jaro", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 
 h1 {
+  font-family: sans-serif;
   font-size: 53px;
 }
 
@@ -29,7 +33,7 @@ h1 {
   position: relative;
   color: #fff;
   font-size: 54px;
-  font-family: "oswald", sans-serif;
+  white-space: nowrap;
 }
 
 .shadow {
